@@ -26,7 +26,7 @@ import {
   LearnMoreLinks,
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
-import {Provider, useSelector} from 'react-redux';
+import {Provider} from 'react-redux';
 import store from './src/store';
 import {
   fetchTransportOptions,
@@ -70,18 +70,25 @@ const getImageForTransportType = (type: String) => {
 
 const App: () => Node = () => {
   const isDarkMode = useColorScheme() === 'dark';
-  let {transport} = useSelector(state => state.transport);
+  let {transport} = store.getState();
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
+  console.log(
+    'in transport, in App render, transport is: ' + JSON.stringify(transport),
+  );
+
+  let data = (transport ?? {}).transportOptions ?? [];
+
+  console.log('in transport, in App render, data is: ' + JSON.stringify(data));
   return (
     <SafeAreaView style={backgroundStyle}>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
       <FlatList
         keyExtractor={(item: TransportOption) => item.devid}
-        data={(transport ?? {}).transportOptions ?? []}
+        data={data}
         renderItem={TransportOptionListItem}
       />
     </SafeAreaView>

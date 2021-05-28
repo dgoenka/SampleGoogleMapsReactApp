@@ -9,10 +9,11 @@ const slice = createSlice({
   },
   reducers: {
     setTransportOptions: (state, action) => {
-      state.transportOptions = action;
+      console.log('in transport, action is: ' + JSON.stringify(action));
+      state.transportOptions = action.payload;
     },
     updateTransportOption: (state, action) => {
-      let option = action;
+      let option = action.payload;
       for (let i = 0; i < (state.transportOptions || []).length; i++) {
         if (option.devid === state.transportOptions[i].devid) {
           state.transportOptions[i].devid = option;
@@ -21,7 +22,7 @@ const slice = createSlice({
       }
     },
     setCurrentlyViewingTransportOption: (state, action) => {
-      state.currentlyViewingTransportOption = action;
+      state.currentlyViewingTransportOption = action.payload;
     },
   },
 });
