@@ -10,14 +10,15 @@ import React from 'react';
 import type {Node} from 'react';
 import {
   SafeAreaView,
-  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
+  Image,
   useColorScheme,
+  TouchableOpacity,
   View,
+  FlatList,
 } from 'react-native';
-
 import {
   Colors,
   DebugInstructions,
@@ -25,35 +26,51 @@ import {
   LearnMoreLinks,
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
+import {Provider, useSelector} from 'react-redux';
+import store from './src/store';
+import {
+  fetchTransportOptions,
+  setCurrentlyViewingTransportOptionAction,
+} from './src/store/transport';
+import type {TransportOption, TransportOptionsProps} from './src/types/types';
 
-const Section = ({children, title}): Node => {
-  const isDarkMode = useColorScheme() === 'dark';
+store.dispatch(fetchTransportOptions());
+
+const tram = require('./images/tram-car.png');
+const train = require('./images/train.png');
+const bus = require('./images/front-of-bus.png');
+
+function onTransportOptionSelected() {
+  store.dispatch(setCurrentlyViewingTransportOptionAction(this.item));
+}
+
+const TransportOptionListItem: () => Node = (props: TransportOptionsProps) => {
   return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
+    <TouchableOpacity
+      onPress={onTransportOptionSelected.bind({item: props.item})}
+      style={styles.transportListItemRootLayoutStyle}>
+      <View style={styles.transportListItemLastUpdatedlRootLayoutStyle}></View>
+      <View style={styles.transportListItemDetaillRootLayoutStyle}>
+        <Image source={getImageForTransportType(props.item.type)} />
+      </View>
+    </TouchableOpacity>
   );
+};
+
+const getImageForTransportType = (type: String) => {
+  switch (type) {
+    case 'tram':
+      return tram;
+    case 'train':
+      return train;
+    case 'bus':
+      return bus;
+  }
 };
 
 const App: () => Node = () => {
   const isDarkMode = useColorScheme() === 'dark';
+  let {transport} = useSelector(state => state.transport);
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
@@ -62,27 +79,33 @@ const App: () => Node = () => {
   return (
     <SafeAreaView style={backgroundStyle}>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+      <FlatList
+        keyExtractor={(item: TransportOption) => item.devid}
+        data={(transport ?? {}).transportOptions ?? []}
+        renderItem={TransportOptionListItem}
+      />
     </SafeAreaView>
   );
 };
 
+const AppWrapper: () => Node = () => (
+  <Provider store={store}>
+    <App />
+  </Provider>
+);
+
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  transportListItemRootLayoutStyle: {
+    flexDirection: 'row',
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
+  transportListItemLastUpdatedlRootLayoutStyle: {
+    flexDirection: 'column',
+    flex: 1,
   },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
+  transportListItemDetaillRootLayoutStyle: {
+    flexDirection: 'column',
+    flex: 4,
   },
 });
 
-export default App;
+export default AppWrapper;
