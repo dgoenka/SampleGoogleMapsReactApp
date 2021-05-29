@@ -1,22 +1,28 @@
 import {createSlice} from '@reduxjs/toolkit';
 import axios from 'axios';
+import * as chrono from 'chrono-node';
+import type {TransportOption} from '../types/types';
+import cloneDeep from 'lodash.clonedeep';
+const qs = require('qs');
+
 // Slice
 const slice = createSlice({
   name: 'transport',
   initialState: {
     transportOptions: [],
-    currentlyShowingTransportOption: 0,
+    currentlyShowingTransportOption: null,
   },
   reducers: {
     setTransportOptions: (state, action) => {
-      console.log('in transport, action is: ' + JSON.stringify(action));
       state.transportOptions = action.payload;
+      state.currentlyViewingTransportOption =
+        (state.transportOptions ?? [])[0] ?? {};
     },
     updateTransportOption: (state, action) => {
       let option = action.payload;
       for (let i = 0; i < (state.transportOptions || []).length; i++) {
         if (option.devid === state.transportOptions[i].devid) {
-          state.transportOptions[i].devid = option;
+          state.transportOptions[i] = option;
           break;
         }
       }
@@ -49,25 +55,35 @@ export const fetchTransportOptions = () => async dispatch => {
       },
       {type: 'tram', route_no: '20', devid: 'dfe595c3ab905cf2e9fed5a24899114a'},
     ];
-    console.log(
-      'in transport, in fetchTransportOptions, data is: ' +
-        JSON.stringify(data),
-    );
+
     dispatch(setTransportOptions(data));
+    dispatch(pollTransportOption(data[0]));
   } catch (e) {
     return console.error(e.message);
   }
 };
 
-export const pollTransportOption = option => async dispatch => {
-  let devid = option.devid;
-  let res = await axios.post(
-    'http://35.197.106.255:3000/api/v1.1/devstat/lastMultiple',
-    {devid},
-  );
-  option.data = res.data;
-  dispatch(updateTransportOption(option));
-};
+export const pollTransportOption =
+  (option: TransportOption) => async dispatch => {
+    let optionClone = cloneDeep(option);
+    let devid = optionClone.devid;
+    let config = {
+      method: 'post',
+      url: 'http://35.197.106.255:3000/api/v1.1/devstat/lastMultiple',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      data: qs.stringify({
+        devid,
+      }),
+    };
+    let res = await axios(config);
+    let data = res.data;
+    optionClone.data = data;
+    dispatch(updateTransportOption(optionClone));
+  };
 
-export const setCurrentlyViewingTransportOptionAction = option => dispatch =>
+export const setCurrentlyViewingTransportOptionAction = option => dispatch => {
   dispatch(setCurrentlyViewingTransportOption(option));
+  dispatch(pollTransportOption(option));
+};

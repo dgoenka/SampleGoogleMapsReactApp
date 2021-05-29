@@ -31,8 +31,14 @@ import store from './src/store';
 import {
   fetchTransportOptions,
   setCurrentlyViewingTransportOptionAction,
+  pollTransportOption,
 } from './src/store/transport';
 import type {TransportOption, TransportOptionsProps} from './src/types/types';
+import {connect} from 'react-redux';
+import useInterval from 'react-useinterval';
+import get from 'lodash.get';
+import * as chrono from 'chrono-node';
+import {formatRelative} from 'date-fns';
 
 store.dispatch(fetchTransportOptions());
 
@@ -41,20 +47,64 @@ const train = require('./images/train.png');
 const bus = require('./images/front-of-bus.png');
 
 function onTransportOptionSelected() {
-  store.dispatch(setCurrentlyViewingTransportOptionAction(this.item));
+  this.dispatch(setCurrentlyViewingTransportOptionAction(this.item));
 }
 
-const TransportOptionListItem: () => Node = (props: TransportOptionsProps) => {
+const _TransportOptionListItem: () => Node = (props: TransportOptionsProps) => {
+  let updatedAtDateObj = chrono.parseDate(
+    get(props, 'item.data.data.updatedAt'),
+  );
   return (
     <TouchableOpacity
-      onPress={onTransportOptionSelected.bind({item: props.item})}
-      style={styles.transportListItemRootLayoutStyle}>
-      <View style={styles.transportListItemLastUpdatedlRootLayoutStyle}></View>
+      onPress={onTransportOptionSelected.bind({
+        dispatch: props.dispatch,
+        item: props.item,
+      })}
+      style={[
+        styles.transportListItemRootLayoutStyle,
+        props.item.devid === props.transport.currentlyViewingTransportOption.devid
+          ? styles.transportListCurrentlyActiveItemRootLayoutStyle
+          : null,
+      ]}>
+      <View style={styles.transportListItemLastUpdatedlRootLayoutStyle}>
+        <Text>
+          {updatedAtDateObj
+            ? formatRelative(updatedAtDateObj, new Date(), {addSuffix: true})
+            : 'Never'}
+        </Text>
+      </View>
       <View style={styles.transportListItemDetaillRootLayoutStyle}>
-        <Image source={getImageForTransportType(props.item.type)} />
+        <Image
+          style={styles.transportListItemDetailLogoStyle}
+          resizeMode={'contain'}
+          source={getImageForTransportType(props.item.type)}
+        />
+        <View style={styles.transportListItemDetailTextLayoutStyle}>
+          <Text style={styles.transportListItemDetailTextHeaderStyle}>
+            {getHeaderForType(props.item.type)}
+          </Text>
+          <Text style={styles.transportListItemDetailTextDetailStyle}>
+            {props.item.route_no}
+          </Text>
+        </View>
       </View>
     </TouchableOpacity>
   );
+};
+
+const TransportOptionListItem = connect(state => ({
+  transport: state.transport,
+}))(_TransportOptionListItem);
+
+const getHeaderForType = (type: String) => {
+  switch (type) {
+    case 'tram':
+      return 'Trolley Bus';
+    case 'train':
+      return 'Train';
+    case 'bus':
+      return 'Bus';
+  }
 };
 
 const getImageForTransportType = (type: String) => {
@@ -68,32 +118,39 @@ const getImageForTransportType = (type: String) => {
   }
 };
 
-const App: () => Node = () => {
+const _App: () => Node = props => {
+  useInterval(() => {
+    if (props.transport.currentlyViewingTransportOption) {
+      props.dispatch(
+        pollTransportOption(props.transport.currentlyViewingTransportOption),
+      );
+    }
+  }, 10000);
   const isDarkMode = useColorScheme() === 'dark';
-  let {transport} = store.getState();
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
-  console.log(
-    'in transport, in App render, transport is: ' + JSON.stringify(transport),
-  );
+  let data = (props.transport ?? {}).transportOptions ?? [];
 
-  let data = (transport ?? {}).transportOptions ?? [];
-
-  console.log('in transport, in App render, data is: ' + JSON.stringify(data));
   return (
     <SafeAreaView style={backgroundStyle}>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
       <FlatList
         keyExtractor={(item: TransportOption) => item.devid}
         data={data}
-        renderItem={TransportOptionListItem}
+        renderItem={renderTransportListItem}
       />
     </SafeAreaView>
   );
 };
+
+const renderTransportListItem = args => <TransportOptionListItem {...args} />;
+
+const App = connect(state => ({
+  transport: state.transport,
+}))(_App);
 
 const AppWrapper: () => Node = () => (
   <Provider store={store}>
@@ -104,14 +161,41 @@ const AppWrapper: () => Node = () => (
 const styles = StyleSheet.create({
   transportListItemRootLayoutStyle: {
     flexDirection: 'row',
+    padding: 5,
+  },
+  transportListCurrentlyActiveItemRootLayoutStyle: {
+    backgroundColor: 'darkgrey',
   },
   transportListItemLastUpdatedlRootLayoutStyle: {
     flexDirection: 'column',
     flex: 1,
+    padding: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   transportListItemDetaillRootLayoutStyle: {
-    flexDirection: 'column',
+    flexDirection: 'row',
     flex: 4,
+    padding: 5,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 5,
+    borderColor: 'grey',
+  },
+  transportListItemDetailLogoStyle: {
+    height: 50,
+    width: 50,
+  },
+  transportListItemDetailTextLayoutStyle: {
+    flex: 1,
+    flexDirection: 'column',
+    padding: 5,
+  },
+  transportListItemDetailTextHeaderStyle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  transportListItemDetailTextDetailStyle: {
+    fontSize: 15,
   },
 });
 
