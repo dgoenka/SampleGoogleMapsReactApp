@@ -114,7 +114,6 @@
 				90EFB9A06AF1094DA98349C3 /* Pods-SampleGoogleMapsApp-SampleGoogleMapsAppTests.debug.xcconfig */,
 				3C79C669F4D09DDB6A56DE42 /* Pods-SampleGoogleMapsApp-SampleGoogleMapsAppTests.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};

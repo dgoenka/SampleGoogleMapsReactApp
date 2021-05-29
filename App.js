@@ -39,7 +39,8 @@ import useInterval from 'react-useinterval';
 import get from 'lodash.get';
 import * as chrono from 'chrono-node';
 import {formatRelative} from 'date-fns';
-import MapView, {Marker} from 'react-native-maps';
+import MapView, {Marker, Callout} from 'react-native-maps';
+import {Appbar} from 'material-bread';
 
 store.dispatch(fetchTransportOptions());
 
@@ -136,15 +137,6 @@ const _App: () => Node = props => {
 
   let data = (props.transport ?? {}).transportOptions ?? [];
 
-  console.log(
-    "in App, in render, get(props,'transport.currentlyViewingTransportOption') is: " +
-      JSON.stringify(
-        get(props, 'transport.currentlyViewingTransportOption'),
-        null,
-        2,
-      ),
-  );
-
   let latitude = get(
     props,
     'transport.currentlyViewingTransportOption.data.data.latitude',
@@ -157,7 +149,14 @@ const _App: () => Node = props => {
   return (
     <SafeAreaView style={backgroundStyle}>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <View style={{width: '100%', height: '75%'}}>
+      <Appbar
+        barType={'normal'}
+        title={'Sample Maps App'}
+        navigation={'menu'}
+        onNavigation={() => console.log('onNavigation!')}
+        actionItems={[{name: 'search', onPress: () => console.log('onSearch')}]}
+      />
+      <View style={styles.seventyFivePercentage}>
         {latitude && longitude ? (
           <MapView
             style={{width: '100%', height: '100%'}}
@@ -180,19 +179,40 @@ const _App: () => Node = props => {
               description={getHeaderForType(
                 get(props, 'transport.currentlyViewingTransportOption.type'),
               )}>
-              <Text
+              <View
                 style={{
-                  backgroundColor: 'red',
-                  color: 'white',
-                  fontWeight: 'bold',
-                  padding: 5,
-                  borderRadius: 30,
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}>
-                {get(
-                  props,
-                  'transport.currentlyViewingTransportOption.route_no',
-                )}
-              </Text>
+                <View
+                  style={{
+                    backgroundColor: 'red',
+                    padding: 5,
+                    borderRadius: 10,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                  <Text
+                    style={{
+                      color: 'white',
+                      fontWeight: 'bold',
+                    }}>
+                    {get(
+                      props,
+                      'transport.currentlyViewingTransportOption.route_no',
+                    )}
+                  </Text>
+                </View>
+                <View
+                  style={{
+                    backgroundColor: 'red',
+                    borderBottomRightRadius: 10,
+                    borderBottomLeftRadius: 10,
+                    height: 10,
+                    width: 5,
+                  }}
+                />
+              </View>
             </Marker>
           </MapView>
         ) : (
@@ -203,7 +223,7 @@ const _App: () => Node = props => {
         )}
       </View>
       <FlatList
-        style={{width: '100%', height: '25%'}}
+        style={styles.twentyFivePercentage}
         keyExtractor={(item: TransportOption) => item.devid}
         data={data}
         renderItem={renderTransportListItem}
@@ -263,6 +283,8 @@ const styles = StyleSheet.create({
   transportListItemDetailTextDetailStyle: {
     fontSize: 15,
   },
+  seventyFivePercentage: {width: '100%', height: '70%'},
+  twentyFivePercentage: {width: '100%', height: '20%'},
 });
 
 export default AppWrapper;

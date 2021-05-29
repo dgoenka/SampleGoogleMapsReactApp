@@ -9,6 +9,9 @@ target 'SampleGoogleMapsApp' do
   # React Native Maps dependencies
   rn_maps_path = '../node_modules/react-native-maps'
   pod 'react-native-google-maps', :path => rn_maps_path
+  pod 'react-native-maps', :path => '../node_modules/react-native-maps'
+  pod 'RNVectorIcons', :path => '../node_modules/react-native-vector-icons'
+  pod 'toolbar-android', :path => '../node_modules/@react-native-community/toolbar-android'
   
   use_react_native!(
     :path => config[:reactNativePath],
@@ -16,8 +19,6 @@ target 'SampleGoogleMapsApp' do
     :hermes_enabled => false
   )
 
-  pod 'react-native-maps', :path => '../node_modules/react-native-maps'
-  pod 'RNVectorIcons', :path => '../node_modules/react-native-vector-icons'
 
   target 'SampleGoogleMapsAppTests' do
     inherit! :complete
