@@ -179,8 +179,21 @@ const _App: () => Node = props => {
               )}
               description={getHeaderForType(
                 get(props, 'transport.currentlyViewingTransportOption.type'),
-              )}
-            />
+              )}>
+              <Text
+                style={{
+                  backgroundColor: 'red',
+                  color: 'white',
+                  fontWeight: 'bold',
+                  padding: 5,
+                  borderRadius: 30,
+                }}>
+                {get(
+                  props,
+                  'transport.currentlyViewingTransportOption.route_no',
+                )}
+              </Text>
+            </Marker>
           </MapView>
         ) : (
           <View
