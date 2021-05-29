@@ -39,6 +39,7 @@ import useInterval from 'react-useinterval';
 import get from 'lodash.get';
 import * as chrono from 'chrono-node';
 import {formatRelative} from 'date-fns';
+import MapView, {Marker} from 'react-native-maps';
 
 store.dispatch(fetchTransportOptions());
 
@@ -62,7 +63,8 @@ const _TransportOptionListItem: () => Node = (props: TransportOptionsProps) => {
       })}
       style={[
         styles.transportListItemRootLayoutStyle,
-        props.item.devid === props.transport.currentlyViewingTransportOption.devid
+        props.item.devid ===
+        props.transport.currentlyViewingTransportOption.devid
           ? styles.transportListCurrentlyActiveItemRootLayoutStyle
           : null,
       ]}>
@@ -134,10 +136,61 @@ const _App: () => Node = props => {
 
   let data = (props.transport ?? {}).transportOptions ?? [];
 
+  console.log(
+    "in App, in render, get(props,'transport.currentlyViewingTransportOption') is: " +
+      JSON.stringify(
+        get(props, 'transport.currentlyViewingTransportOption'),
+        null,
+        2,
+      ),
+  );
+
+  let latitude = get(
+    props,
+    'transport.currentlyViewingTransportOption.data.data.latitude',
+  );
+  let longitude = get(
+    props,
+    'transport.currentlyViewingTransportOption.data.data.longitude',
+  );
+
   return (
     <SafeAreaView style={backgroundStyle}>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+      <View style={{width: '100%', height: '75%'}}>
+        {latitude && longitude ? (
+          <MapView
+            style={{width: '100%', height: '100%'}}
+            region={{
+              latitude,
+              longitude,
+              latitudeDelta: 0.0055,
+              longitudeDelta: 0.0027,
+            }}>
+            <Marker
+              key={get(
+                props,
+                'transport.currentlyViewingTransportOption.devid',
+              )}
+              coordinate={{latitude, longitude}}
+              title={get(
+                props,
+                'transport.currentlyViewingTransportOption.route_no',
+              )}
+              description={getHeaderForType(
+                get(props, 'transport.currentlyViewingTransportOption.type'),
+              )}
+            />
+          </MapView>
+        ) : (
+          <View
+            style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+            <Text>{'Please Wait..'}.</Text>
+          </View>
+        )}
+      </View>
       <FlatList
+        style={{width: '100%', height: '25%'}}
         keyExtractor={(item: TransportOption) => item.devid}
         data={data}
         renderItem={renderTransportListItem}

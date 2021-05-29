@@ -26,6 +26,12 @@ const slice = createSlice({
           break;
         }
       }
+      if (
+        state.currentlyViewingTransportOption &&
+        state.currentlyViewingTransportOption.devid === option.devid
+      ) {
+        state.currentlyViewingTransportOption = option;
+      }
     },
     setCurrentlyViewingTransportOption: (state, action) => {
       state.currentlyViewingTransportOption = action.payload;
