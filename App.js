@@ -159,7 +159,7 @@ const _App: () => Node = props => {
       <View style={styles.seventyFivePercentage}>
         {latitude && longitude ? (
           <MapView
-            style={{width: '100%', height: '100%'}}
+            style={styles.hundredPercentage}
             region={{
               latitude,
               longitude,
@@ -179,45 +179,21 @@ const _App: () => Node = props => {
               description={getHeaderForType(
                 get(props, 'transport.currentlyViewingTransportOption.type'),
               )}>
-              <View
-                style={{
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
-                <View
-                  style={{
-                    backgroundColor: 'red',
-                    padding: 5,
-                    borderRadius: 10,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}>
-                  <Text
-                    style={{
-                      color: 'white',
-                      fontWeight: 'bold',
-                    }}>
+              <View style={styles.center}>
+                <View style={styles.markerTextStyle}>
+                  <Text style={styles.markerTextFontStyle}>
                     {get(
                       props,
                       'transport.currentlyViewingTransportOption.route_no',
                     )}
                   </Text>
                 </View>
-                <View
-                  style={{
-                    backgroundColor: 'red',
-                    borderBottomRightRadius: 10,
-                    borderBottomLeftRadius: 10,
-                    height: 10,
-                    width: 5,
-                  }}
-                />
+                <View style={styles.markerPointerStyle} />
               </View>
             </Marker>
           </MapView>
         ) : (
-          <View
-            style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+          <View style={styles.pleaseWaitTextStyle}>
             <Text>{'Please Wait..'}.</Text>
           </View>
         )}
@@ -285,6 +261,34 @@ const styles = StyleSheet.create({
   },
   seventyFivePercentage: {width: '100%', height: '70%'},
   twentyFivePercentage: {width: '100%', height: '20%'},
+  hundredPercentage: {width: '100%', height: '100%'},
+  center: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  markerTextStyle: {
+    padding: 5,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'red',
+  },
+  markerTextFontStyle: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  markerPointerStyle: {
+    backgroundColor: 'red',
+    borderBottomRightRadius: 10,
+    borderBottomLeftRadius: 10,
+    height: 10,
+    width: 5,
+  },
+  pleaseWaitTextStyle: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });
 
 export default AppWrapper;
