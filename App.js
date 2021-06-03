@@ -159,6 +159,7 @@ const _App: () => Node = props => {
       <View style={styles.seventyFivePercentage}>
         {latitude && longitude ? (
           <MapView
+            provider={'google'}
             style={styles.hundredPercentage}
             region={{
               latitude,
